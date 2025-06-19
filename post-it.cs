@@ -47,7 +47,7 @@ public class CPHInline
     {
         foreach (var item in elementList)
         {
-            CPH.ObsSetSourceVisibilityState(item.Key, item.Value, 1);
+            CPH.ObsHideSource(item.Key, item.Value);
         }
     }
     public void showRandom(List<KeyValuePair<string, string>> elementList)
@@ -55,7 +55,7 @@ public class CPHInline
         hideAll(elementList);
         int toShow = rnd.Next(0, elementList.Count);
         CPH.SetGlobalVar("ElementCycleIndex", toShow, false);
-        CPH.ObsSetSourceVisibilityState(elementList[toShow].Key, elementList[toShow].Value, 2);
+        CPH.ObsShowSource(elementList[toShow].Key, elementList[toShow].Value);
         CPH.LogInfo($"[PostItNote] Showing '{elementList[toShow].Value}' from scene '{elementList[toShow].Key}'");
     }
     public void showNext(List<KeyValuePair<string, string>> elementList)
@@ -68,7 +68,7 @@ public class CPHInline
             toShow = 0;
         }
         CPH.SetGlobalVar("ElementCycleIndex", toShow, false);
-        CPH.ObsSetSourceVisibilityState(elementList[toShow].Key, elementList[toShow].Value, 2);
+        CPH.ObsShowSource(elementList[toShow].Key, elementList[toShow].Value);
         CPH.LogInfo($"[PostItNote] Showing '{elementList[toShow].Value}' from scene '{elementList[toShow].Key}'");
     }
 }
