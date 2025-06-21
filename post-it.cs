@@ -1,5 +1,10 @@
+/**
+* Original Script by Zaygnor: 2025-04-01 | Rewritten by Bacon Fixation: 2025-6-21
+*/
+
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 public class CPHInline
 {
@@ -17,11 +22,12 @@ public class CPHInline
 
         if (elapsed.TotalSeconds < cooldownSeconds)
         {
-            CPH.SendMessage($"@unicorntoots42, slow down! Wait {cooldownSeconds - (int)elapsed.TotalSeconds}s.");
+            CPH.SendMessage($"Slow down! Wait {cooldownSeconds - (int)elapsed.TotalSeconds}s.");
             return false;
         }
         CPH.SetGlobalVar(cooldownVar, now, false);
-        List<KeyValuePair<string, string>> elementList = new List<KeyValuePair<string, string>>
+
+        List<KeyValuePair<string, string>> allNotes = new List<KeyValuePair<string, string>>
         {
             new KeyValuePair<string, string>("PS5", "Need Money"),
             new KeyValuePair<string, string>("PS5", "Stinky"),
@@ -32,43 +38,49 @@ public class CPHInline
             new KeyValuePair<string, string>("PS5", "Mommy"),
             new KeyValuePair<string, string>("PS5", "UwU Post It"),
         };
-        bool useRandom = true;
-        if (useRandom)
+
+        List<string> activeValues = CPH.GetGlobalVar<List<string>>("ActivePostItNotes", false) ?? new List<string>();
+
+
+        var availableNotes = allNotes.Where(n => !activeValues.Contains(n.Value)).ToList();
+
+        if (availableNotes.Count == 0)
         {
-            showRandom(elementList);
+            CPH.SendMessage("All post-it notes are already showing!");
+            return false;
         }
-        else
-        {
-            showNext(elementList);
-        }
+
+        var noteToShow = availableNotes[rnd.Next(availableNotes.Count)];
+
+        CPH.ObsShowSource(noteToShow.Key, noteToShow.Value);
+        CPH.LogInfo($"[PostItNote] Showing '{noteToShow.Value}' from scene '{noteToShow.Key}'");
+
+        activeValues.Add(noteToShow.Value);
+        CPH.SetGlobalVar("ActivePostItNotes", activeValues, false);
+
         return true;
     }
-    public void hideAll(List<KeyValuePair<string, string>> elementList)
+
+    public void ResetAll()
     {
-        foreach (var item in elementList)
+        List<KeyValuePair<string, string>> allNotes = new List<KeyValuePair<string, string>>
         {
-            CPH.ObsHideSource(item.Key, item.Value);
-        }
-    }
-    public void showRandom(List<KeyValuePair<string, string>> elementList)
-    {
-        hideAll(elementList);
-        int toShow = rnd.Next(0, elementList.Count);
-        CPH.SetGlobalVar("ElementCycleIndex", toShow, false);
-        CPH.ObsShowSource(elementList[toShow].Key, elementList[toShow].Value);
-        CPH.LogInfo($"[PostItNote] Showing '{elementList[toShow].Value}' from scene '{elementList[toShow].Key}'");
-    }
-    public void showNext(List<KeyValuePair<string, string>> elementList)
-    {
-        hideAll(elementList);
-        int toShow = CPH.GetGlobalVar<int>("ElementCycleIndex", false);
-        toShow += 1;
-        if (toShow >= elementList.Count)
+            new KeyValuePair<string, string>("PS5", "Need Money"),
+            new KeyValuePair<string, string>("PS5", "Stinky"),
+            new KeyValuePair<string, string>("PS5", "Dumb B"),
+            new KeyValuePair<string, string>("PS5", "Horny"),
+            new KeyValuePair<string, string>("PS5", "Dum"),
+            new KeyValuePair<string, string>("PS5", "Waifu"),
+            new KeyValuePair<string, string>("PS5", "Mommy"),
+            new KeyValuePair<string, string>("PS5", "UwU Post It"),
+        };
+
+        foreach (var note in allNotes)
         {
-            toShow = 0;
+            CPH.ObsHideSource(note.Key, note.Value);
         }
-        CPH.SetGlobalVar("ElementCycleIndex", toShow, false);
-        CPH.ObsShowSource(elementList[toShow].Key, elementList[toShow].Value);
-        CPH.LogInfo($"[PostItNote] Showing '{elementList[toShow].Value}' from scene '{elementList[toShow].Key}'");
+
+        CPH.SetGlobalVar("ActivePostItNotes", new List<string>(), false);
+        CPH.SendMessage("All post-it notes have been reset!");
     }
 }
